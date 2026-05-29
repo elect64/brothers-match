@@ -5,10 +5,111 @@
 
 'use strict';
 
+/* ==================== FIREBASE SETUP ==================== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  update,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// REPLACE THIS OBJECT WITH your exact config from Step 1.3
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyDIsNwNf8dcHOOYBckXgXAGpMisBrG4pxM",
+  authDomain: "live-score-app-63a97.firebaseapp.com",
+  databaseURL: "https://live-score-app-63a97-default-rtdb.firebaseio.com",
+  projectId: "live-score-app-63a97",
+  storageBucket: "live-score-app-63a97.firebasestorage.app",
+  messagingSenderId: "484767214076",
+  appId: "1:484767214076:web:2c89b11777547f2648aa79",
+  measurementId: "G-LYDGFJD5XH"
+};
+
+// Initialize Firebase App
+const app = initializeApp(firebaseConfig);
+
+// Initialize Realtime Database
+const db = getDatabase(app);
+
+// Create a main reference point for our match data
+const matchRef = ref(db, 'liveMatch');
+
+console.log("Firebase successfully initialized and connected!");
+
+onValue(matchRef, (snapshot) => {
+
+ const data = snapshot.val();
+
+ document.getElementById("homeScoreDisplay")
+ .innerText = data.scoreA;
+
+ document.getElementById("awayScoreDisplay")
+ .innerText = data.scoreB;
+
+});
+
+/* ==================== STAGE 2: DATABASE INITIALIZATION ==================== */
+// A temporary one-time function to build our initial JSON tree in Firebase
+function initializeDatabase() {
+  set(matchRef, {
+    teams: {
+      home: { name: "200L & 300L", score: 0 },
+      away: { name: "100L & FYB", score: 0 }
+    },
+    status: "PRE",
+    timer: {
+      running: false,
+      startTime: 0,
+      elapsed: 0
+    }
+  }).then(() => {
+    console.log("✅ Database structure created successfully!");
+  }).catch((error) => {
+    console.error("❌ Error creating database:", error);
+  });
+}
+
+// ACTION REQUIRED: Uncomment the line below to run the function once.
+  // initializeDatabase();
+
+/* ==================== STAGE 3: REALTIME SYNCING ==================== */
+
+// onValue acts as a constant listener. It runs once immediately, 
+// and then runs again EVERY TIME the data in Firebase changes.
+onValue(matchRef, (snapshot) => {
+  // snapshot.val() grabs the entire JSON tree from Firebase
+  const data = snapshot.val();
+  
+  if (data) {
+    console.log("Live Update Received:", data);
+
+    // 1. Extract the data into easy-to-use variables
+    const homeTeam = data.teams.home;
+    const awayTeam = data.teams.away;
+    const matchStatus = data.status;
+
+    // 2. Update your UI!
+    // NOTE: Replace 'homeScoreElement' and 'awayScoreElement' with the 
+    // EXACT HTML IDs you used in your index.html file for the scores.
+    
+    document.getElementById('homeScoreDisplay').innerText = homeTeam.score;
+    document.getElementById('awayScoreDisplay').innerText = awayTeam.score;
+    
+    // If you have a custom syncUI() function or a STATE object, 
+    // update your STATE here and call syncUI();
+  } else {
+    console.warn("No data found in Firebase!");
+  }
+});
+
 /* ==================== STATE ==================== */
 const STATE = {
-  home: { name: 'FC BROTHERS', score: 0 },
-  away: { name: 'RIVALS XI',   score: 0 },
+  home: { name: '200L & 300L', score: 0 },
+  away: { name: '100L & FYB',   score: 0 },
   timer:  { secs: 0, running: false, _iv: null },
   status: 'PRE',  // PRE | LIVE | HT | FT
   events: [],
@@ -20,7 +121,7 @@ const STATE = {
     homeCorners:  0, awayCorners:  0,
     homePassAcc: 78, awayPassAcc: 74
   },
-  venue: 'Brotherhood Stadium',
+  venue: 'Estadio Premiere Olobo',
   adminEvtTeam: 'home',
   adminEvtType: 'goal',
   _confettiRaf: null,
@@ -32,30 +133,30 @@ const STORAGE_KEY = 'bm_v2';
 /* ==================== LINEUPS ==================== */
 const LINEUPS = {
   home: [
-    {n:1, name:'T. IBRAHIM',    pos:'GK'},
-    {n:2, name:'A. HASSAN',     pos:'RB'},
-    {n:5, name:'K. MENSAH',     pos:'CB'},
-    {n:6, name:'D. OSEI',       pos:'CB'},
-    {n:3, name:'E. BOATENG',    pos:'LB'},
-    {n:8, name:'F. ASANTE',     pos:'CM'},
-    {n:4, name:'J. ASAMOAH',    pos:'CM'},
-    {n:7, name:'M. KWAME',      pos:'RW'},
-    {n:10,name:'S. ACHEAMPONG', pos:'AM'},
-    {n:11,name:'R. OWUSU',      pos:'LW'},
-    {n:9, name:'P. DARKO',      pos:'ST'}
+    {n:1, name:'O. KENNEDY',    pos:'AM'},
+    {n:2, name:'S. JOSHUA',     pos:'RB'},
+    {n:5, name:'JIDE',     pos:'CB'},
+    {n:6, name:'P. CHIMA',       pos:'CB'},
+    {n:3, name:'E. VICTOR',    pos:'LB'},
+    {n:8, name:'O. ELECT',     pos:'CM'},
+    {n:4, name:'CHIDIOMIMI',    pos:'CM'},
+    {n:7, name:'ARINZE',      pos:'RW'},
+    {n:10,name:'U. EMMANUEL', pos:'GK'},
+    {n:11,name:'GREAT-VICTOR',      pos:'LW'},
+    {n:9, name:'',      pos:'ST'}
   ],
   away: [
-    {n:1, name:'C. ADDO',    pos:'GK'},
-    {n:2, name:'B. QUAYE',   pos:'RB'},
-    {n:5, name:'G. TETTEH',  pos:'CB'},
-    {n:6, name:'H. ANKRAH',  pos:'CB'},
-    {n:3, name:'I. WIREDU',  pos:'LB'},
-    {n:8, name:'L. OPOKU',   pos:'CM'},
-    {n:4, name:'N. NYARKO',  pos:'CM'},
-    {n:7, name:'O. FRIMPONG',pos:'RW'},
-    {n:10,name:'Q. POKU',    pos:'AM'},
-    {n:11,name:'U. BARIMAH', pos:'LW'},
-    {n:9, name:'V. GYASI',   pos:'ST'}
+    {n:1, name:'P. BEULAH',    pos:'GK'},
+    {n:2, name:'C. GODSWILL',   pos:'RB'},
+    {n:5, name:'C. PLACID',  pos:'CB'},
+    {n:6, name:'N. BENJAMIN',  pos:'CB'},
+    {n:3, name:'E. DANIEL',  pos:'LB'},
+    {n:8, name:'J. SUCCESS',   pos:'CM'},
+    {n:4, name:'A. JOHN',  pos:'CM'},
+    {n:7, name:'C. MIRACLE',pos:'RW'},
+    {n:10,name:'O. MIRACLE',    pos:'AM'},
+    {n:11,name:'O. JUSTICE', pos:'LW'},
+    {n:9, name:'C. PROSPER',   pos:'ST'}
   ]
 };
 
@@ -80,6 +181,12 @@ function runLoader() {
   const screen = document.getElementById('loadingScreen');
   const bar    = document.getElementById('loaderProgress');
   const pct    = document.getElementById('loaderPct');
+  if (!screen || !bar || !pct) {
+    if (document.body) document.body.classList.remove('loading');
+    if (screen && screen.parentNode) screen.parentNode.removeChild(screen);
+    return;
+  }
+
   let p = 0;
   const iv = setInterval(() => {
     p += Math.random() * 14 + 4;
@@ -184,11 +291,11 @@ function initParticles() {
 
 /* ==================== TICKER ==================== */
 const TICKER_STATIC = [
-  '🏟️ Brotherhood Stadium · Fellowship Cup 2024',
+  '🏟️ Estadio Premiere Olobo · 30th May 2026',
   '🎙️ Live Match Commentary Available',
   '📱 Share the Live Experience with Fellow Brothers',
   '⚽ Brotherhood · Unity · Competition',
-  '🌟 Fellowship Cup — Bringing Brothers Together on the Pitch',
+  '🌟 Brothers Football Match — Bringing Brothers Together on the Pitch',
   '🔥 Tonight\'s Feature Fixture Is LIVE',
 ];
 
@@ -905,3 +1012,5 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape')      { if (_adminOpen) toggleAdmin(); closeLineupModal(); }
   if (e.key.toLowerCase()==='a' && !_adminOpen) toggleAdmin();
 });
+
+ 
