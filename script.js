@@ -74,7 +74,7 @@ function initializeDatabase() {
 }
 
 // ACTION REQUIRED: Uncomment the line below to run the function once.
-  // initializeDatabase();
+ initializeDatabase();
 
 /* ==================== STAGE 3: REALTIME SYNCING ==================== */
 
