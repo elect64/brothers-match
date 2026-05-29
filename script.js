@@ -74,37 +74,114 @@ function initializeDatabase() {
 }
 
 // ACTION REQUIRED: Uncomment the line below to run the function once.
- // initializeDatabase();
+  // initializeDatabase();
 
-/* ==================== STAGE 3: REALTIME SYNCING ==================== */
+/* ==================== STAGES 3 & 4: ARCHITECTURE INTEGRATION ==================== */
 
-// onValue acts as a constant listener. It runs once immediately, 
-// and then runs again EVERY TIME the data in Firebase changes.
+// Global variable to hold our background calculation loop
+let firebaseTimerInterval = null;
+
 onValue(matchRef, (snapshot) => {
-  // snapshot.val() grabs the entire JSON tree from Firebase
   const data = snapshot.val();
+  if (!data) {
+    console.warn("No match data found in Firebase.");
+    return;
+  }
+
+  console.log("🔥 Firebase Match Sync Received:", data);
+
+  // 1. Sync Score & Team State directly into your architecture
+  STATE.home.name = data.teams.home.name;
+  STATE.home.score = data.teams.home.score;
+  STATE.away.name = data.teams.away.name;
+  STATE.away.score = data.teams.away.score;
+  STATE.status = data.status;
+
+  // 2. Manage the Professional Synchronized Timer Loop
+  const fTimer = data.timer;
   
-  if (data) {
-    console.log("Live Update Received:", data);
+  if (firebaseTimerInterval) {
+    clearInterval(firebaseTimerInterval);
+  }
 
-    // 1. Extract the data into easy-to-use variables
-    const homeTeam = data.teams.home;
-    const awayTeam = data.teams.away;
-    const matchStatus = data.status;
+  const runTimerCalculation = () => {
+    let currentElapsedSeconds = Number(fTimer.elapsed) || 0;
 
-    // 2. Update your UI!
-    // NOTE: Replace 'homeScoreElement' and 'awayScoreElement' with the 
-    // EXACT HTML IDs you used in your index.html file for the scores.
-    
-    document.getElementById('homeScoreDisplay').innerText = homeTeam.score;
-    document.getElementById('awayScoreDisplay').innerText = awayTeam.score;
-    
-    // If you have a custom syncUI() function or a STATE object, 
-    // update your STATE here and call syncUI();
+    if (fTimer.running && fTimer.startTime) {
+      const serverNow = Date.now();
+      // Calculate real time delta from server timestamp coordinates
+      const secondsSinceKickoff = Math.max(0, Math.floor((serverNow - fTimer.startTime) / 1000));
+      currentElapsedSeconds += secondsSinceKickoff;
+    }
+
+    // Crucial Bridge: Inject calculated time straight into your local tracking state
+    STATE.timer.secs = currentElapsedSeconds;
+    STATE.timer.running = fTimer.running;
+
+    // Fire your native UI rendering function to update every asset on screen smoothly
+    syncUI();
+  };
+
+  // If match is active, loop the clock engine every 200ms to stay synchronized
+  if (fTimer.running) {
+    firebaseTimerInterval = setInterval(runTimerCalculation, 200);
   } else {
-    console.warn("No data found in Firebase!");
+    runTimerCalculation();
   }
 });
+
+
+// /* ==================== STAGE 4: TIMER ENGINE (FORTIFIED) ==================== */
+//     const timerData = data.timer;
+//     const matchStatus = data.status;
+    
+//     if (window.matchTimerInterval) {
+//       clearInterval(window.matchTimerInterval);
+//     }
+
+//     const updateTimerDisplay = () => {
+//       let totalSeconds = Number(timerData.elapsed) || 0;
+
+//       if (timerData.running && timerData.startTime) {
+//         const now = Date.now();
+//         // Math.max guarantees we never display a broken negative value if clocks are out of sync
+//         const secondsSinceStart = Math.max(0, Math.floor((now - timerData.startTime) / 1000));
+//         totalSeconds += secondsSinceStart;
+//       }
+
+//       const mins = Math.floor(totalSeconds / 60);
+//       const secs = totalSeconds % 60;
+//       const formattedTime = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+//       // Targeted UI Selector Fallback
+//       // This checks for the main timer classes used in premium sport templates
+//       const mainTimerEl = document.querySelector('.timer-digital') || 
+//                           document.getElementById('timerDisplay') || 
+//                           document.querySelector('.timer-display');
+                          
+//       if (mainTimerEl) {
+//         mainTimerEl.innerText = formattedTime;
+//       } else {
+//         console.warn("⚠️ Timer UI element not targeted. Calculated Time:", formattedTime);
+//       }
+//     };
+
+//     if (timerData.running) {
+//       console.log("⏱️ Timer Loop is actively executing on Firebase trigger...");
+//       window.matchTimerInterval = setInterval(updateTimerDisplay, 100); // 10hz update frequency
+//     } else {
+//       updateTimerDisplay();
+//     }
+
+//     // Status Pill Sync
+//     const statusPill = document.querySelector('.status-badge') || document.querySelector('.status-pill');
+//     if (statusPill) {
+//       if (matchStatus === "PRE") statusPill.innerText = "PRE-MATCH";
+//       if (matchStatus === "LIVE") statusPill.innerText = "LIVE";
+//       if (matchStatus === "HT") statusPill.innerText = "HALFTIME";
+//       if (matchStatus === "FT") statusPill.innerText = "FULLTIME";
+//     }
+
 
 /* ==================== STATE ==================== */
 const STATE = {
