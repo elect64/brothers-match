@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brothers Match — Live Football</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&family=Syne:wght@400;500;600;700;800&family=Barlow+Condensed:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="loading">
+
+    <!-- ==================== LOADING SCREEN ==================== -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader-orb loader-orb--1"></div>
+        <div class="loader-orb loader-orb--2"></div>
+        <div class="loader-content">
+            <div class="loader-logo">
+                <svg viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="45" cy="45" r="40" stroke="url(#lg1)" stroke-width="1.5" opacity="0.4"/>
+                    <circle cx="45" cy="45" r="32" stroke="url(#lg1)" stroke-width="1.5"/>
+                    <path d="M45 13C45 13 58 26 58 45C58 64 45 77 45 77C45 77 32 64 32 45C32 26 45 13 45 13Z" fill="url(#lg1)" opacity="0.6"/>
+                    <circle cx="45" cy="45" r="6" fill="url(#lg1)"/>
+                    <path d="M13 45 L77 45" stroke="url(#lg1)" stroke-width="1" opacity="0.3"/>
+                    <defs>
+                        <linearGradient id="lg1" x1="0" y1="0" x2="90" y2="90">
+                            <stop offset="0%" stop-color="#1A7BFF"/>
+                            <stop offset="100%" stop-color="#00E5FF"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <div class="loader-wordmark">BROTHERS MATCH</div>
+            <div class="loader-tagline">LIVE FOOTBALL EXPERIENCE</div>
+            <div class="loader-bar-wrap">
+                <div class="loader-bar">
+                    <div class="loader-progress" id="loaderProgress"></div>
+                    <div class="loader-bar-shine"></div>
+                </div>
+            </div>
+            <div class="loader-pct" id="loaderPct">0%</div>
+        </div>
+    </div>
+
+    <!-- ==================== PARTICLE CANVAS ==================== -->
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+
+    <!-- ==================== LIVE TICKER ==================== -->
+    <div class="ticker-bar" id="tickerBar">
+        <div class="ticker-label">
+            <span class="live-dot"></span>LIVE
+        </div>
+        <div class="ticker-track">
+            <div class="ticker-content" id="tickerContent"></div>
+        </div>
+        <div class="ticker-end-fade"></div>
+    </div>
+
+    <!-- ==================== HERO / SCOREBOARD ==================== -->
+    <section class="hero" id="heroSection">
+
+        <!-- Stadium Background Layers -->
+        <div class="stadium-bg">
+            <div class="sb-gradient"></div>
+            <div class="sb-pitch-oval"></div>
+            <div class="sb-pitch-lines"></div>
+            <div class="sb-light sb-light--tl"></div>
+            <div class="sb-light sb-light--tr"></div>
+            <div class="sb-light sb-light--bl"></div>
+            <div class="sb-light sb-light--br"></div>
+            <div class="sb-vignette"></div>
+        </div>
+
+        <!-- Ambient Glow Orbs -->
+        <div class="glow-orb glow-orb--1"></div>
+        <div class="glow-orb glow-orb--2"></div>
+        <div class="glow-orb glow-orb--3"></div>
+
+        <div class="hero-inner">
+
+            <!-- Competition Header -->
+            <header class="comp-header" id="compHeader">
+                <div class="comp-emblem">
+                    <svg viewBox="0 0 44 44" fill="none">
+                        <circle cx="22" cy="22" r="20" stroke="url(#ce1)" stroke-width="1.5"/>
+                        <path d="M22 6C22 6 30 14 30 22C30 30 22 38 22 38C22 38 14 30 14 22C14 14 22 6 22 6Z" fill="url(#ce1)" opacity="0.7"/>
+                        <path d="M6 22 L38 22" stroke="url(#ce1)" stroke-width="1" opacity="0.3"/>
+                        <circle cx="22" cy="22" r="4" fill="url(#ce1)"/>
+                        <defs>
+                            <linearGradient id="ce1" x1="0" y1="0" x2="44" y2="44">
+                                <stop offset="0%" stop-color="#1A7BFF"/>
+                                <stop offset="100%" stop-color="#00E5FF"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="comp-text">
+                    <span class="comp-name">BROTHERS MATCH</span>
+                    <span class="comp-edition">Fellowship Cup · 2024</span>
+                </div>
+                <div class="live-badge" id="liveBadge">
+                    <span class="live-dot"></span>
+                    <span id="liveBadgeText">PRE-MATCH</span>
+                </div>
+            </header>
+
+            <!-- Main Scoreboard Card -->
+            <div class="scoreboard-card" id="scoreboardCard">
+                <div class="sb-card-shine"></div>
+                <div class="sb-card-topline"></div>
+
+                <!-- Home Team -->
+                <div class="team-block team-block--home">
+                    <div class="crest-wrap">
+                        <div class="crest" id="homeCrest"></div>
+                        <div class="crest-ring"></div>
+                        <div class="crest-glow crest-glow--home"></div>
+                    </div>
+                    <div class="team-name" id="homeTeamName">FC BROTHERS</div>
+                    <div class="team-badge-row">
+                        <span class="team-label-tag">HOME</span>
+                        <div class="card-count-row" id="homeCards"></div>
+                    </div>
+                </div>
+
+                <!-- Score Center -->
+                <div class="score-center">
+                    <div class="score-row">
+                        <div class="score-num-wrap">
+                            <span class="score-num" id="homeScoreDisplay">0</span>
+                        </div>
+                        <div class="score-sep">
+                            <span class="score-colon">:</span>
+                            <div class="period-pill" id="matchPeriod">1ST HALF</div>
+                        </div>
+                        <div class="score-num-wrap">
+                            <span class="score-num" id="awayScoreDisplay">0</span>
+                        </div>
+                    </div>
+
+                    <div class="meta-block">
+                        <div class="timer-ring-wrap">
+                            <svg class="timer-svg" viewBox="0 0 64 64">
+                                <circle cx="32" cy="32" r="28" stroke="rgba(26,123,255,0.15)" stroke-width="2.5" fill="none"/>
+                                <circle cx="32" cy="32" r="28"
+                                    stroke="url(#tg1)"
+                                    stroke-width="2.5" fill="none"
+                                    stroke-dasharray="175.9"
+                                    stroke-dashoffset="175.9"
+                                    id="timerCircle"
+                                    stroke-linecap="round"
+                                    transform="rotate(-90 32 32)"/>
+                                <defs>
+                                    <linearGradient id="tg1" x1="0" y1="0" x2="64" y2="64">
+                                        <stop offset="0%" stop-color="#1A7BFF"/>
+                                        <stop offset="100%" stop-color="#00E5FF"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <span class="timer-inner-val" id="timerDisplay">00:00</span>
+                        </div>
+
+                        <div class="status-pill" id="matchStatusBadge">
+                            <span class="status-dot"></span>
+                            <span id="matchStatusText">PRE-MATCH</span>
+                        </div>
+
+                        <div class="venue-label" id="matchVenue">Brotherhood Stadium</div>
+                    </div>
+                </div>
+
+                <!-- Away Team -->
+                <div class="team-block team-block--away">
+                    <div class="crest-wrap">
+                        <div class="crest" id="awayCrest"></div>
+                        <div class="crest-ring"></div>
+                        <div class="crest-glow crest-glow--away"></div>
+                    </div>
+                    <div class="team-name" id="awayTeamName">RIVALS XI</div>
+                    <div class="team-badge-row">
+                        <div class="card-count-row" id="awayCards"></div>
+                        <span class="team-label-tag">AWAY</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats Strip -->
+            <div class="qs-strip" id="qsStrip">
+                <div class="qs-item">
+                    <span class="qs-val qs-val--home" id="qsHomePoss">50%</span>
+                    <div class="qs-track">
+                        <div class="qs-fill" id="qsPossBar" style="width:50%"></div>
+                    </div>
+                    <span class="qs-val qs-val--away" id="qsAwayPoss">50%</span>
+                    <span class="qs-label">POSSESSION</span>
+                </div>
+                <div class="qs-divider"></div>
+                <div class="qs-item">
+                    <span class="qs-val qs-val--home" id="qsHomeShots">0</span>
+                    <div class="qs-track">
+                        <div class="qs-fill" id="qsShotsBar" style="width:50%"></div>
+                    </div>
+                    <span class="qs-val qs-val--away" id="qsAwayShots">0</span>
+                    <span class="qs-label">SHOTS ON TARGET</span>
+                </div>
+                <div class="qs-divider"></div>
+                <div class="qs-item">
+                    <span class="qs-val qs-val--home" id="qsHomeCorners">0</span>
+                    <div class="qs-track">
+                        <div class="qs-fill" id="qsCornersBar" style="width:50%"></div>
+                    </div>
+                    <span class="qs-val qs-val--away" id="qsAwayCorners">0</span>
+                    <span class="qs-label">CORNERS</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Scroll Down -->
+        <button class="scroll-cta" onclick="document.getElementById('mainContent').scrollIntoView({behavior:'smooth'})">
+            <div class="scroll-chevron"></div>
+            <span>MATCH DETAILS</span>
+        </button>
+    </section>
+
+    <!-- ==================== MAIN CONTENT ==================== -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Timer Control Bar -->
+        <section class="timer-section">
+            <div class="timer-card">
+                <div class="timer-display-block">
+                    <span class="timer-big" id="timerBigDisplay">00:00</span>
+                    <span class="timer-period-tag" id="timerPeriodLabel">PRE-MATCH</span>
+                </div>
+                <div class="timer-btns">
+                    <button class="t-btn t-btn--start" id="startTimerBtn" onclick="timerControl('start')">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        START
+                    </button>
+                    <button class="t-btn t-btn--pause" id="pauseTimerBtn" onclick="timerControl('pause')" disabled>
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        PAUSE
+                    </button>
+                    <button class="t-btn t-btn--reset" onclick="timerControl('reset')">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                        RESET
+                    </button>
+                </div>
+                <div class="status-pill-row">
+                    <button class="sp-btn" id="spPre"   onclick="setStatus('PRE')">PRE</button>
+                    <button class="sp-btn" id="spLive"  onclick="setStatus('LIVE')">LIVE</button>
+                    <button class="sp-btn" id="spHt"    onclick="setStatus('HT')">HT</button>
+                    <button class="sp-btn" id="spFt"    onclick="setStatus('FT')">FT</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events + Stats Grid -->
+        <div class="two-col-grid">
+
+            <!-- Match Events -->
+            <section class="glass-card events-section">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <div class="card-title-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2L3 7v11h14V7l-7-5zm0 2.4L15 8v10H5V8l5-3.6z"/></svg>
+                        </div>
+                        <h2 class="card-title">MATCH EVENTS</h2>
+                    </div>
+                    <span class="event-count-badge" id="eventsCount">0 events</span>
+                </div>
+                <div class="events-timeline" id="eventsTimeline">
+                    <div class="events-empty" id="eventsEmpty">
+                        <div class="empty-ball">⚽</div>
+                        <p class="empty-text">Events appear here in real-time</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Match Stats -->
+            <section class="glass-card stats-section">
+                <div class="card-header">
+                    <div class="card-title-group">
+                        <div class="card-title-icon">
+                            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 11h3v7H2v-7zm6-4h3v11H8V7zm6-6h3v17h-3V1z"/></svg>
+                        </div>
+                        <h2 class="card-title">MATCH STATS</h2>
+                    </div>
+                    <div class="stats-team-labels">
+                        <span id="statsHomeName">HOME</span>
+                        <span id="statsAwayName">AWAY</span>
+                    </div>
+                </div>
+                <div class="stats-list" id="statsList"></div>
+            </section>
+
+        </div>
+
+        <!-- Lineup Section -->
+        <section class="glass-card lineup-section">
+            <div class="card-header">
+                <div class="card-title-group">
+                    <div class="card-title-icon">
+                        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 12H5a3 3 0 00-3 3v2h16v-2a3 3 0 00-3-3h-4zm0 0V9m2 3V9M7 9a3 3 0 116 0 3 3 0 01-6 0z"/></svg>
+                    </div>
+                    <h2 class="card-title">LINEUPS</h2>
+                </div>
+                <button class="lineup-open-btn" onclick="openLineupModal()">
+                    VIEW FULL SQUAD
+                    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M6 12l4-4-4-4"/></svg>
+                </button>
+            </div>
+            <div class="pitch-preview">
+                <svg class="pitch-svg" viewBox="0 0 360 220" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="360" height="220" rx="6" fill="rgba(0,80,20,0.12)" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <rect x="1" y="1" width="358" height="218" rx="5" fill="none" stroke="rgba(26,123,255,0.08)" stroke-width="1"/>
+                    <line x1="180" y1="0" x2="180" y2="220" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <circle cx="180" cy="110" r="38" fill="none" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <circle cx="180" cy="110" r="3" fill="rgba(26,123,255,0.4)"/>
+                    <rect x="0" y="72" width="58" height="76" fill="none" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <rect x="0" y="90" width="22" height="40" fill="none" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <circle cx="58" cy="110" r="12" fill="none" stroke="rgba(26,123,255,0.15)" stroke-width="1" stroke-dasharray="3,3"/>
+                    <rect x="302" y="72" width="58" height="76" fill="none" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <rect x="338" y="90" width="22" height="40" fill="none" stroke="rgba(26,123,255,0.2)" stroke-width="1"/>
+                    <circle cx="302" cy="110" r="12" fill="none" stroke="rgba(26,123,255,0.15)" stroke-width="1" stroke-dasharray="3,3"/>
+                </svg>
+                <div class="pitch-label pitch-label--home" id="pitchHomeName">FC BROTHERS</div>
+                <div class="pitch-label pitch-label--away" id="pitchAwayName">RIVALS XI</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== ADMIN OVERLAY ==================== -->
+    <div class="admin-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
+
+    <!-- ==================== ADMIN PANEL ==================== -->
+    <aside class="admin-panel" id="adminPanel">
+        <div class="admin-head">
+            <div class="admin-head-title">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" class="admin-head-icon">
+                    <circle cx="10" cy="10" r="3"/>
+                    <path d="M10 1v2M10 17v2M1 10h2M17 10h2M3.22 3.22l1.42 1.42M15.36 15.36l1.42 1.42M3.22 16.78l1.42-1.42M15.36 4.64l1.42-1.42"/>
+                </svg>
+                ADMIN CONTROL
+            </div>
+            <button class="admin-close-btn" onclick="toggleAdmin()" aria-label="Close panel">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 5L5 15M5 5l10 10"/></svg>
+            </button>
+        </div>
+
+        <nav class="admin-nav">
+            <button class="a-tab active" data-tab="score"  onclick="switchTab('score')">SCORE</button>
+            <button class="a-tab" data-tab="events" onclick="switchTab('events')">EVENTS</button>
+            <button class="a-tab" data-tab="stats"  onclick="switchTab('stats')">STATS</button>
+            <button class="a-tab" data-tab="teams"  onclick="switchTab('teams')">TEAMS</button>
+        </nav>
+
+        <!-- Tab: Score -->
+        <div class="a-content active" id="tab-score">
+            <div class="a-group">
+                <div class="a-label">HOME TEAM SCORE</div>
+                <div class="score-ctrl">
+                    <button class="sc-btn" onclick="adjustScore('home',-1)">−</button>
+                    <div class="sc-val" id="adminHomeScore">0</div>
+                    <button class="sc-btn" onclick="adjustScore('home',1)">+</button>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">AWAY TEAM SCORE</div>
+                <div class="score-ctrl">
+                    <button class="sc-btn" onclick="adjustScore('away',-1)">−</button>
+                    <div class="sc-val" id="adminAwayScore">0</div>
+                    <button class="sc-btn" onclick="adjustScore('away',1)">+</button>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">MATCH STATUS</div>
+                <div class="a-btn-row">
+                    <button class="a-status-btn" onclick="setStatus('PRE')">PRE-MATCH</button>
+                    <button class="a-status-btn a-status-btn--live" onclick="setStatus('LIVE')">▶ LIVE</button>
+                    <button class="a-status-btn" onclick="setStatus('HT')">HALF TIME</button>
+                    <button class="a-status-btn" onclick="setStatus('FT')">FULL TIME</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Events -->
+        <div class="a-content" id="tab-events">
+            <div class="a-group">
+                <div class="a-label">PLAYER NAME</div>
+                <input class="a-input" id="evtPlayer" placeholder="Enter player name…" type="text" autocomplete="off">
+            </div>
+            <div class="a-group">
+                <div class="a-label">SECOND PLAYER (assist / sub-in)</div>
+                <input class="a-input" id="evtPlayer2" placeholder="Optional…" type="text" autocomplete="off">
+            </div>
+            <div class="a-group">
+                <div class="a-label">TEAM</div>
+                <div class="a-toggle-row">
+                    <button class="a-toggle-btn active" id="evtTeamHome" onclick="selectEvtTeam('home')">🏠 HOME</button>
+                    <button class="a-toggle-btn" id="evtTeamAway" onclick="selectEvtTeam('away')">✈ AWAY</button>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">EVENT TYPE</div>
+                <div class="evt-type-grid">
+                    <button class="evt-type-btn selected" data-type="goal"    onclick="selectEvtType('goal')"><span>⚽</span>GOAL</button>
+                    <button class="evt-type-btn" data-type="yellow"  onclick="selectEvtType('yellow')"><span>🟨</span>YELLOW</button>
+                    <button class="evt-type-btn" data-type="red"     onclick="selectEvtType('red')"><span>🟥</span>RED</button>
+                    <button class="evt-type-btn" data-type="sub"     onclick="selectEvtType('sub')"><span>🔄</span>SUB</button>
+                    <button class="evt-type-btn" data-type="foul"    onclick="selectEvtType('foul')"><span>👟</span>FOUL</button>
+                    <button class="evt-type-btn" data-type="offside" onclick="selectEvtType('offside')"><span>🚩</span>OFFSIDE</button>
+                </div>
+            </div>
+            <button class="a-action-btn" onclick="addEvent()">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 5v10M5 10h10"/></svg>
+                ADD EVENT
+            </button>
+        </div>
+
+        <!-- Tab: Stats -->
+        <div class="a-content" id="tab-stats">
+            <div class="a-group">
+                <div class="a-label">POSSESSION (HOME %)</div>
+                <div class="a-slider-row">
+                    <input type="range" class="a-slider" id="possSlider" min="0" max="100" value="50"
+                           oninput="updateStat('possession',this.value)">
+                    <span class="a-slider-val" id="possVal">50%</span>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">SHOTS ON TARGET</div>
+                <div class="a-dual">
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeShotsI" value="0" type="number" min="0" oninput="updateStat('shotsHome',this.value)"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayShotsI" value="0" type="number" min="0" oninput="updateStat('shotsAway',this.value)"></label>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">FOULS</div>
+                <div class="a-dual">
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeFoulsI" value="0" type="number" min="0" oninput="updateStat('foulsHome',this.value)"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayFoulsI" value="0" type="number" min="0" oninput="updateStat('foulsAway',this.value)"></label>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">CORNERS</div>
+                <div class="a-dual">
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeCornersI" value="0" type="number" min="0" oninput="updateStat('cornersHome',this.value)"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayCornersI" value="0" type="number" min="0" oninput="updateStat('cornersAway',this.value)"></label>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">PASS ACCURACY (%)</div>
+                <div class="a-dual">
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homePassI" value="78" type="number" min="0" max="100" oninput="updateStat('passHome',this.value)"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayPassI"  value="74" type="number" min="0" max="100" oninput="updateStat('passAway',this.value)"></label>
+                </div>
+            </div>
+            <div class="a-group">
+                <div class="a-label">SHOTS OFF TARGET</div>
+                <div class="a-dual">
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeShotsOffI" value="0" type="number" min="0" oninput="updateStat('shotsOffHome',this.value)"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayShotsOffI" value="0" type="number" min="0" oninput="updateStat('shotsOffAway',this.value)"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Teams -->
+        <div class="a-content" id="tab-teams">
+            <div class="a-group">
+                <div class="a-label">HOME TEAM NAME</div>
+                <input class="a-input" id="homeTeamI" value="FC BROTHERS" type="text" placeholder="FC BROTHERS">
+            </div>
+            <div class="a-group">
+                <div class="a-label">AWAY TEAM NAME</div>
+                <input class="a-input" id="awayTeamI" value="RIVALS XI" type="text" placeholder="RIVALS XI">
+            </div>
+            <div class="a-group">
+                <div class="a-label">VENUE / STADIUM</div>
+                <input class="a-input" id="venueI" value="Brotherhood Stadium" type="text">
+            </div>
+            <button class="a-action-btn" onclick="updateTeams()">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                APPLY CHANGES
+            </button>
+            <button class="a-action-btn a-action-btn--danger" onclick="resetAll()" style="margin-top:8px">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg>
+                RESET ALL DATA
+            </button>
+        </div>
+    </aside>
+
+    <!-- Admin Toggle FAB -->
+    <button class="admin-fab" id="adminFab" onclick="toggleAdmin()" aria-label="Open admin panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span class="fab-tooltip">ADMIN</span>
+    </button>
+
+    <!-- ==================== GOAL CELEBRATION ==================== -->
+    <div class="goal-celebration" id="goalCelebration">
+        <canvas class="confetti-canvas" id="confettiCanvas"></canvas>
+        <div class="goal-flash" id="goalFlash"></div>
+        <div class="goal-ring-1"></div>
+        <div class="goal-ring-2"></div>
+        <div class="goal-text-wrap">
+            <div class="goal-word-row">
+                <span class="goal-word" id="goalWord">GOAL!</span>
+            </div>
+            <div class="goal-scorer" id="goalScorer"></div>
+            <div class="goal-team"   id="goalTeam"></div>
+        </div>
+    </div>
+
+    <!-- ==================== LINEUP MODAL ==================== -->
+    <div class="modal-overlay" id="lineupModal" onclick="handleModalClick(event)">
+        <div class="modal-box">
+            <div class="modal-top">
+                <h3 class="modal-title">MATCH LINEUPS</h3>
+                <button class="modal-x" onclick="closeLineupModal()">
+                    <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2"/></svg>
+                </button>
+            </div>
+            <div class="modal-cols">
+                <div class="modal-col">
+                    <div class="modal-team-hdr modal-team-hdr--home" id="lineupHomeHdr">FC BROTHERS</div>
+                    <div class="modal-lineup" id="lineupHomeList"></div>
+                </div>
+                <div class="modal-col-divider"></div>
+                <div class="modal-col">
+                    <div class="modal-team-hdr modal-team-hdr--away" id="lineupAwayHdr">RIVALS XI</div>
+                    <div class="modal-lineup" id="lineupAwayList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Container -->
+    <div class="notif-container" id="notifContainer"></div>
+
+    <!-- Screen Flash -->
+    <div class="screen-flash" id="screenFlash"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
