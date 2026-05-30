@@ -51,7 +51,8 @@ const DEFAULT_STATE = {
   },
   timer: { running: false, startedAt: 0, elapsedMs: 0 },
   status: 'PRE',
-  venue:  'Estadio Premiere Olobo',
+  venue: 'Estadio Premiere Olobo',
+  kickoff: 0,                    // Unix timestamp (ms) when match starts
   stats: {
     possession: 50,
     homeShotsOn: 0, awayShotsOn: 0,
@@ -104,11 +105,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   attachEventListeners(); 
   
   /* ── Initialize Firebase FIRST, then start timer display ── */
-  await initFirebase();          // ✅ Wait for Firebase to connect and load data
+  await initFirebase();          
   
   seedNotifications();
-  startTimerDisplayInterval();   // ✅ Now CACHE has real data from Firebase
+  startTimerDisplayInterval();   
 });
+
 function attachEventListeners() {
   // Score controls
   qa('.sc-btn').forEach(btn => {
@@ -139,6 +141,16 @@ function attachEventListeners() {
   q('#adminFab')       ?.addEventListener('click', toggleAdmin);
   q('.admin-close-btn')?.addEventListener('click', toggleAdmin);
   q('#adminOverlay')   ?.addEventListener('click', toggleAdmin);
+  
+  // Password modal events
+  q('#adminPasswordSubmit')?.addEventListener('click', checkPassword);
+  q('#adminPasswordInput') ?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+    if (e.key === 'Escape') closeLockModal();
+  });
+  q('#adminLockOverlay')   ?.addEventListener('click', e => {
+    if (e.target.id === 'adminLockOverlay') closeLockModal();
+  });
 
   // Admin tabs
   qa('.a-tab').forEach(btn => {
@@ -156,8 +168,8 @@ function attachEventListeners() {
   // Timer buttons
   q('#startTimerBtn')?.addEventListener('click', () => timerControl('start'));
   q('#pauseTimerBtn')?.addEventListener('click', () => timerControl('pause'));
-  qa('.t-btn--reset').forEach(btn => btn.addEventListener('click', () => timerControl('reset')));
-
+  q('#resetTimerBtn')?.addEventListener('click', () => timerControl('reset'));
+  
   // Stats sliders / inputs
   q('#possSlider')    ?.addEventListener('input', e => updateStat('possession',   e.target.value));
   q('#homeShotsI')    ?.addEventListener('input', e => updateStat('shotsHome',    e.target.value));
@@ -172,7 +184,7 @@ function attachEventListeners() {
   q('#awayPassI')     ?.addEventListener('input', e => updateStat('passAway',     e.target.value));
 
   // Teams tab
-  q('#tab-teams .a-action-btn:not(.a-action-btn--danger)')?.addEventListener('click', updateTeams);
+  q('#applyTeamsBtn')?.addEventListener('click', updateTeams);  
   q('#tab-teams .a-action-btn--danger')?.addEventListener('click', resetAll);
 
   // Lineup modal
@@ -186,25 +198,36 @@ function attachEventListeners() {
   // Global Keys
   window.addEventListener('keydown', e => {
     if (e.target.matches('input, textarea')) return;
-    if (e.key === ' ')      { e.preventDefault(); CACHE.timer.running ? timerControl('pause') : timerControl('start'); }
-    if (e.key === 'Escape') { if (_adminOpen) toggleAdmin(); closeLineupModal(); }
-    if (e.key.toLowerCase() === 'a' && !_adminOpen) toggleAdmin();
+    
+    if (e.key === ' ') {
+      e.preventDefault();
+      if (_adminUnlocked) {
+        CACHE.timer.running ? timerControl('pause') : timerControl('start');
+      }
+    }    
+    
+    if (e.key === 'Escape') { 
+      if (_adminOpen) toggleAdmin(); 
+      closeLineupModal(); 
+    }
+    
+    if (e.key.toLowerCase() === 'a' && !_adminOpen && !_adminUnlocked) {
+      e.preventDefault();
+      openLockModal();
+    }  
   });
 }
 
 async function initFirebase() {
-  /* ── Check if database has data ── */
   const snap = await get(MATCH_REF);
   
   if (!snap.exists()) {
-    /* First time ever — create the default structure */
     await set(MATCH_REF, DEFAULT_STATE);
     console.log('✅ Firebase initialized with default state');
   } else {
     console.log('✅ Firebase data found — using existing state');
   }
 
-  /* ── Master Listener: fires on EVERY data change ── */
   onValue(MATCH_REF, snapshot => {
     const data = snapshot.val();
     if (!data) return;
@@ -241,30 +264,33 @@ async function initFirebase() {
     });
   });
 }
+
 /* ================================================================
    SECTION 5 — TIMER SYSTEM
    ================================================================ */
 function computeElapsedMs() {
   const t = CACHE.timer;
-  /* Guard: if timer hasn't loaded from Firebase yet */
   if (!t) return 0;
-  
   if (!t.running) return t.elapsedMs || 0;
   
-  /* When running: total elapsed = previous time + time since last start */
   const elapsed = (t.elapsedMs || 0) + (serverNow() - (t.startedAt || serverNow()));
   return Math.max(0, elapsed);
 }
 
 function startTimerDisplayInterval() {
   if (_timerDisplayInterval) clearInterval(_timerDisplayInterval);
-  _timerDisplayInterval = setInterval(renderTimerDisplay, 500);
+  _timerDisplayInterval = setInterval(renderTimerDisplay, 5000);
   renderTimerDisplay(); 
 }
 
 function renderTimerDisplay() {
-  /* Guard: if timer data hasn't loaded yet, don't render */
   if (!CACHE.timer) return;
+  
+  // PRE-MATCH: Show countdown to kickoff if kickoff time is set
+  if (CACHE.status === 'PRE' && CACHE.kickoff && CACHE.kickoff > 0) {
+    renderKickoffCountdown();
+    return;
+  }
   
   const ms   = Math.max(0, computeElapsedMs());
   const secs = Math.floor(ms / 1000);
@@ -276,12 +302,147 @@ function renderTimerDisplay() {
   setText('timerBigDisplay', str);
   setText('matchPeriod',     periodLabel());
   setText('timerPeriodLabel', periodLabel());
+  
+  const viewerStatus = q('#viewerTimerStatus');
+  if (viewerStatus) {
+    if (CACHE.status === 'PRE') viewerStatus.textContent = 'Waiting for kickoff';
+    else if (CACHE.status === 'LIVE') viewerStatus.textContent = 'Match in progress';
+    else if (CACHE.status === 'HT') viewerStatus.textContent = 'Half time';
+    else if (CACHE.status === 'FT') viewerStatus.textContent = 'Match ended';
+  }
 
   const progress = Math.min(secs / 5400, 1);
   const circ     = 175.9;
   const el = q('#timerCircle');
   if (el) el.style.strokeDashoffset = (circ - progress * circ).toFixed(2);
+  
+  renderAdminTimer();
 }
+
+function renderAdminTimer() {
+  const ms = Math.max(0, computeElapsedMs());
+  const secs = Math.floor(ms / 1000);
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  const str = pad2(m) + ':' + pad2(s);
+  
+  const adminVal = q('#adminTimerVal');
+  const adminPeriod = q('#adminTimerPeriod');
+  
+  if (adminVal) adminVal.textContent = str;
+  if (adminPeriod) adminPeriod.textContent = periodLabel();
+}
+
+function renderKickoffCountdown() {
+  const now = serverNow();
+  const kickoff = CACHE.kickoff;
+  const diff = kickoff - now;
+  
+  const timerDisplay = q('#timerDisplay');
+  const timerBig = q('#timerBigDisplay');
+  const matchPeriod = q('#matchPeriod');
+  const timerPeriodLabel = q('#timerPeriodLabel');
+  const timerCircle = q('#timerCircle');
+  
+  if (diff > 0) {
+    // Still counting down
+    const totalSecs = Math.floor(diff / 1000);
+    const days = Math.floor(totalSecs / 86400);
+    const hours = Math.floor((totalSecs % 86400) / 3600);
+    const minutes = Math.floor((totalSecs % 3600) / 60);
+    const seconds = totalSecs % 60;
+    
+    // Format based on how much time remains
+    let timeStr;
+    if (days > 0) {
+      timeStr = `${days}d ${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;
+    } else if (hours > 0) {
+      timeStr = `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;
+    } else {
+      timeStr = `${pad2(minutes)}:${pad2(seconds)}`;
+    }
+    
+    // ONLY urgent when under 60 seconds
+    const isUrgent = totalSecs < 60;
+    // ONLY show "starting soon" when under 5 minutes (300 seconds)
+    const isSoon = totalSecs < 300;
+    
+    // Update small timer display (hero section)
+    if (timerDisplay) timerDisplay.textContent = timeStr;
+    
+    // Update big timer display with proper conditional classes
+    if (timerBig) {
+      // Build class string - only add countdown-urgent when actually urgent
+      const wrapClass = isUrgent ? 'countdown-wrap countdown-urgent' : 'countdown-wrap';
+      const soonHtml = isSoon ? '<div class="countdown-live-soon">MATCH STARTING SOON</div>' : '';
+      
+      timerBig.innerHTML = `
+        <div class="${wrapClass}">
+          <div class="countdown-label">Kickoff in</div>
+          <div class="countdown-grid">
+            ${days > 0 ? `
+              <div class="countdown-block">
+                <span class="countdown-num">${days}</span>
+                <span class="countdown-unit">Days</span>
+              </div>
+              <span class="countdown-sep">:</span>
+            ` : ''}
+            ${hours > 0 || days > 0 ? `
+              <div class="countdown-block">
+                <span class="countdown-num">${pad2(hours)}</span>
+                <span class="countdown-unit">Hrs</span>
+              </div>
+              <span class="countdown-sep">:</span>
+            ` : ''}
+            <div class="countdown-block">
+              <span class="countdown-num">${pad2(minutes)}</span>
+              <span class="countdown-unit">Min</span>
+            </div>
+            <span class="countdown-sep">:</span>
+            <div class="countdown-block">
+              <span class="countdown-num">${pad2(seconds)}</span>
+              <span class="countdown-unit">Sec</span>
+            </div>
+          </div>
+          ${soonHtml}
+        </div>
+      `;
+    }
+    
+    if (matchPeriod) matchPeriod.textContent = 'PRE-MATCH';
+    if (timerPeriodLabel) timerPeriodLabel.textContent = 'PRE-MATCH';
+    
+    // Reset circle
+    if (timerCircle) timerCircle.style.strokeDashoffset = '175.9';
+    
+    // Update admin panel display too
+    const adminVal = q('#adminTimerVal');
+    const adminPeriod = q('#adminTimerPeriod');
+    if (adminVal) adminVal.textContent = timeStr;
+    if (adminPeriod) adminPeriod.textContent = 'PRE-MATCH';
+    
+  } else {
+    // Kickoff time has passed!
+    if (timerDisplay) timerDisplay.textContent = '00:00';
+    if (timerBig) {
+      timerBig.innerHTML = `
+        <div class="countdown-wrap">
+          <div class="countdown-passed">KICKOFF TIME REACHED</div>
+          <div class="countdown-label">Click START to begin match</div>
+        </div>
+      `;
+    }
+    if (matchPeriod) matchPeriod.textContent = 'READY';
+    if (timerPeriodLabel) timerPeriodLabel.textContent = 'READY';
+    
+    // Update admin panel
+    const adminVal = q('#adminTimerVal');
+    const adminPeriod = q('#adminTimerPeriod');
+    if (adminVal) adminVal.textContent = '00:00';
+    if (adminPeriod) adminPeriod.textContent = 'READY';
+  }
+}
+
 async function timerControl(action) {
   const currentMs = computeElapsedMs();
   if (action === 'start' && !CACHE.timer.running) {
@@ -537,26 +698,102 @@ async function updateTeams() {
   const hn = q('#homeTeamI')?.value;
   const an = q('#awayTeamI')?.value;
   const vn = q('#venueI')?.value;
+  const kickoffInput = q('#kickoffI')?.value; 
 
   const updates = {};
   if (hn) updates['teams/home/name'] = hn;
   if (an) updates['teams/away/name'] = an;
   if (vn) updates['venue'] = vn;
+  
+  if (kickoffInput) {
+    const kickoffDate = new Date(kickoffInput);
+    const kickoffMs = kickoffDate.getTime();
+    if (!isNaN(kickoffMs)) {
+      updates['kickoff'] = kickoffMs;
+    }
+  }
 
   if (Object.keys(updates).length > 0) {
     await update(MATCH_REF, updates);
-    notify('info', '✅ UPDATED', 'Team information saved', '');
+    notify('info', '✅ UPDATED', 'Match information saved', '');
   }
 }
 
 /* ================================================================
    SECTION 9 — ADMIN UI & RESET
    ================================================================ */
+/* ================================================================
+   ADMIN PASSWORD PROTECTION
+   ================================================================ */
+const ADMIN_PASSWORD = 'brothers2026';     
+let _adminUnlocked = false;                
+
 function toggleAdmin() {
-  _adminOpen = !_adminOpen;
-  q('#adminPanel')  ?.classList.toggle('open',   _adminOpen);
-  q('#adminOverlay')?.classList.toggle('active', _adminOpen);
-  document.body.classList.toggle('no-scroll', _adminOpen);
+  if (_adminUnlocked) {
+    _adminOpen = !_adminOpen;
+    q('#adminPanel')  ?.classList.toggle('open',   _adminOpen);
+    q('#adminOverlay')?.classList.toggle('active', _adminOpen);
+    document.body.classList.toggle('no-scroll', _adminOpen);
+    return;
+  }
+  openLockModal();
+}
+
+function openLockModal() {
+  const overlay = q('#adminLockOverlay');
+  const input = q('#adminPasswordInput');
+  const error = q('#adminLockError');
+  const box = q('.admin-lock-box');
+  
+  if (!overlay) return;
+  
+  if (input) input.value = '';
+  if (error) error.classList.remove('show');
+  if (box) box.classList.remove('shake');
+  
+  overlay.classList.add('active');
+  if (input) setTimeout(() => input.focus(), 350);  
+  
+  document.body.classList.add('no-scroll');
+}
+
+function closeLockModal() {
+  const overlay = q('#adminLockOverlay');
+  if (overlay) overlay.classList.remove('active');
+  document.body.classList.remove('no-scroll');
+}
+
+function checkPassword() {
+  const input = q('#adminPasswordInput');
+  const error = q('#adminLockError');
+  const box = q('.admin-lock-box');
+  const password = input?.value?.trim();
+  
+  if (!password || !input) return;
+  
+  if (password === ADMIN_PASSWORD) {
+    _adminUnlocked = true;
+    closeLockModal();
+    
+    setTimeout(() => {
+      _adminOpen = true;
+      q('#adminPanel')  ?.classList.toggle('open',   true);
+      q('#adminOverlay')?.classList.toggle('active', true);
+      document.body.classList.add('no-scroll');
+    }, 300);
+    
+  } else {
+    input.value = '';
+    input.focus();
+    
+    if (error) error.classList.add('show');
+    
+    if (box) {
+      box.classList.remove('shake');
+      void box.offsetWidth;         
+      box.classList.add('shake');
+    }
+  }
 }
 
 function switchTab(tab) {
@@ -588,17 +825,26 @@ function syncAdminInputs() {
   set2('awayCornersI', s.awayCorners);
   set2('homePassI',    s.homePassAcc);
   set2('awayPassI',    s.awayPassAcc);
+
+  const kickoffEl = q('#kickoffI');
+  if (kickoffEl && CACHE.kickoff && CACHE.kickoff > 0) {
+    const d = new Date(CACHE.kickoff);
+    const pad = n => String(n).padStart(2, '0');
+    const localStr = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    kickoffEl.value = localStr;
+  }
 }
 
 async function resetAll() {
-  if (!confirm('Reset ALL match data? Scores, events, and timer will be cleared. This cannot be undone.')) return;
+  if (!confirm('Reset ALL match data? Scores, events, timer, and kickoff will be cleared. This cannot be undone.')) return;
   await set(MATCH_REF, {
     ...DEFAULT_STATE,
     teams: {
       home: { name: CACHE.teams.home.name, score: 0 },
       away: { name: CACHE.teams.away.name, score: 0 }
     },
-    venue: CACHE.venue
+    venue: CACHE.venue,
+    kickoff: 0 
   });
   notify('info', '🔄 RESET', 'All match data cleared', '');
 }
