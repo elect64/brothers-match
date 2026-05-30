@@ -228,32 +228,16 @@
     <!-- ==================== MAIN CONTENT ==================== -->
     <main class="main-content" id="mainContent">
 
-        <!-- Timer Control Bar -->
+               <!-- Timer Display (Viewers See This - No Controls) -->
         <section class="timer-section">
-            <div class="timer-card">
+            <div class="timer-card timer-card--viewer">
                 <div class="timer-display-block">
                     <span class="timer-big" id="timerBigDisplay">00:00</span>
                     <span class="timer-period-tag" id="timerPeriodLabel">PRE-MATCH</span>
                 </div>
-                <div class="timer-btns">
-                    <button class="t-btn t-btn--start" id="startTimerBtn">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                        START
-                    </button>
-                    <button class="t-btn t-btn--pause" id="pauseTimerBtn" disabled>
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                        PAUSE
-                    </button>
-                    <button class="t-btn t-btn--reset">
-                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
-                        RESET
-                    </button>
-                </div>
-                <div class="status-pill-row">
-                    <button class="sp-btn" id="spPre">PRE</button>
-                    <button class="sp-btn" id="spLive">LIVE</button>
-                    <button class="sp-btn" id="spHt">HT</button>
-                    <button class="sp-btn" id="spFt">FT</button>
+                <div class="viewer-timer-hint">
+                    <span class="live-dot"></span>
+                    <span id="viewerTimerStatus">Waiting for kickoff</span>
                 </div>
             </div>
         </section>
@@ -337,6 +321,34 @@
     <!-- ==================== ADMIN OVERLAY ==================== -->
     <div class="admin-overlay" id="adminOverlay"></div>
 
+        <!-- ==================== ADMIN PASSWORD MODAL ==================== -->
+    <div class="admin-lock-overlay" id="adminLockOverlay">
+        <div class="admin-lock-box">
+            <div class="admin-lock-icon">🔒</div>
+            <div class="admin-lock-title">ADMIN ACCESS</div>
+            <div class="admin-lock-sub">Enter password to control the match</div>
+            
+            <div class="admin-lock-input-wrap" id="lockInputWrap">
+                <input 
+                    type="password" 
+                    class="admin-lock-input" 
+                    id="adminPasswordInput" 
+                    placeholder="Enter password..."
+                    autocomplete="off"
+                >
+                <button class="admin-lock-submit" id="adminPasswordSubmit">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="admin-lock-error" id="adminLockError">Incorrect password</div>
+            
+            <div class="admin-lock-hint">Hint: <span>Psalm 133:1</span></div>
+        </div>
+    </div>
+
     <!-- ==================== ADMIN PANEL ==================== -->
     <aside class="admin-panel" id="adminPanel">
         <div class="admin-head">
@@ -359,7 +371,7 @@
             <button class="a-tab" data-tab="teams">TEAMS</button>
         </nav>
 
-        <!-- Tab: Score -->
+             <!-- Tab: Score -->
         <div class="a-content active" id="tab-score">
             <div class="a-group">
                 <div class="a-label">HOME TEAM SCORE</div>
@@ -377,6 +389,36 @@
                     <button class="sc-btn">+</button>
                 </div>
             </div>
+            
+            <!-- TIMER CONTROLS (Admin Only) -->
+            <div class="a-group a-group--timer">
+                <div class="a-label">⏱️ MATCH TIMER CONTROLS</div>
+                <div class="admin-timer-display">
+                    <span class="admin-timer-val" id="adminTimerVal">00:00</span>
+                    <span class="admin-timer-period" id="adminTimerPeriod">PRE-MATCH</span>
+                </div>
+                <div class="timer-btns timer-btns--admin">
+                    <button class="t-btn t-btn--start" id="startTimerBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        START
+                    </button>
+                    <button class="t-btn t-btn--pause" id="pauseTimerBtn" disabled>
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        PAUSE
+                    </button>
+                    <button class="t-btn t-btn--reset" id="resetTimerBtn">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                        RESET
+                    </button>
+                </div>
+                <div class="status-pill-row status-pill-row--admin">
+                    <button class="sp-btn" id="spPre">PRE</button>
+                    <button class="sp-btn" id="spLive">LIVE</button>
+                    <button class="sp-btn" id="spHt">HT</button>
+                    <button class="sp-btn" id="spFt">FT</button>
+                </div>
+            </div>
+            
             <div class="a-group">
                 <div class="a-label">MATCH STATUS</div>
                 <div class="a-btn-row">
@@ -482,7 +524,14 @@
                 <div class="a-label">VENUE / STADIUM</div>
                 <input class="a-input" id="venueI" value="Brotherhood Stadium" type="text">
             </div>
-            <button class="a-action-btn">
+                        <div class="a-group">
+                <div class="a-label">KICKOFF TIME</div>
+                <input class="a-input" id="kickoffI" type="datetime-local">
+                <div class="a-hint" style="font-family:var(--f-mono);font-size:9px;color:var(--c-white-20);margin-top:6px;letter-spacing:1px;">
+                    Set when the match starts. Countdown appears in PRE-MATCH.
+                </div>
+            </div>
+            <button class="a-action-btn" id="applyTeamsBtn">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
                 APPLY CHANGES
             </button>
