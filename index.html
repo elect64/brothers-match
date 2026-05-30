@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brothers Match — Live Football</title>
+    <title>Brothers Match — WCCCF UNIPORT</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -97,8 +97,8 @@
                     </svg>
                 </div>
                 <div class="comp-text">
-                    <span class="comp-name">BROTHERS MATCH</span>
-                    <span class="comp-edition">Fellowship Cup · 2024</span>
+                    <span class="comp-name">BROTHERS FOOTBALL MATCH</span>
+                    <span class="comp-edition">30TH MAY · 2026</span>
                 </div>
                 <div class="live-badge" id="liveBadge">
                     <span class="live-dot"></span>
@@ -118,7 +118,7 @@
                         <div class="crest-ring"></div>
                         <div class="crest-glow crest-glow--home"></div>
                     </div>
-                    <div class="team-name" id="homeTeamName">FC BROTHERS</div>
+                    <div class="team-name" id="homeTeamName">200L & 300L</div>
                     <div class="team-badge-row">
                         <span class="team-label-tag">HOME</span>
                         <div class="card-count-row" id="homeCards"></div>
@@ -167,7 +167,7 @@
                             <span id="matchStatusText">PRE-MATCH</span>
                         </div>
 
-                        <div class="venue-label" id="matchVenue">Brotherhood Stadium</div>
+                        <div class="venue-label" id="matchVenue"> Estadio Premiere Olobo</div>
                     </div>
                 </div>
 
@@ -178,7 +178,7 @@
                         <div class="crest-ring"></div>
                         <div class="crest-glow crest-glow--away"></div>
                     </div>
-                    <div class="team-name" id="awayTeamName">RIVALS XI</div>
+                    <div class="team-name" id="awayTeamName">100L & FYB</div>
                     <div class="team-badge-row">
                         <div class="card-count-row" id="awayCards"></div>
                         <span class="team-label-tag">AWAY</span>
@@ -219,7 +219,7 @@
         </div>
 
         <!-- Scroll Down -->
-        <button class="scroll-cta" onclick="document.getElementById('mainContent').scrollIntoView({behavior:'smooth'})">
+        <button class="scroll-cta">
             <div class="scroll-chevron"></div>
             <span>MATCH DETAILS</span>
         </button>
@@ -236,24 +236,24 @@
                     <span class="timer-period-tag" id="timerPeriodLabel">PRE-MATCH</span>
                 </div>
                 <div class="timer-btns">
-                    <button class="t-btn t-btn--start" id="startTimerBtn" onclick="timerControl('start')">
+                    <button class="t-btn t-btn--start" id="startTimerBtn">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
                         START
                     </button>
-                    <button class="t-btn t-btn--pause" id="pauseTimerBtn" onclick="timerControl('pause')" disabled>
+                    <button class="t-btn t-btn--pause" id="pauseTimerBtn" disabled>
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
                         PAUSE
                     </button>
-                    <button class="t-btn t-btn--reset" onclick="timerControl('reset')">
+                    <button class="t-btn t-btn--reset">
                         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
                         RESET
                     </button>
                 </div>
                 <div class="status-pill-row">
-                    <button class="sp-btn" id="spPre"   onclick="setStatus('PRE')">PRE</button>
-                    <button class="sp-btn" id="spLive"  onclick="setStatus('LIVE')">LIVE</button>
-                    <button class="sp-btn" id="spHt"    onclick="setStatus('HT')">HT</button>
-                    <button class="sp-btn" id="spFt"    onclick="setStatus('FT')">FT</button>
+                    <button class="sp-btn" id="spPre">PRE</button>
+                    <button class="sp-btn" id="spLive">LIVE</button>
+                    <button class="sp-btn" id="spHt">HT</button>
+                    <button class="sp-btn" id="spFt">FT</button>
                 </div>
             </div>
         </section>
@@ -308,7 +308,7 @@
                     </div>
                     <h2 class="card-title">LINEUPS</h2>
                 </div>
-                <button class="lineup-open-btn" onclick="openLineupModal()">
+                <button class="lineup-open-btn" id="lineupOpenBtn">
                     VIEW FULL SQUAD
                     <svg viewBox="0 0 16 16" fill="currentColor"><path d="M6 12l4-4-4-4"/></svg>
                 </button>
@@ -335,7 +335,7 @@
     </main>
 
     <!-- ==================== ADMIN OVERLAY ==================== -->
-    <div class="admin-overlay" id="adminOverlay" onclick="toggleAdmin()"></div>
+    <div class="admin-overlay" id="adminOverlay"></div>
 
     <!-- ==================== ADMIN PANEL ==================== -->
     <aside class="admin-panel" id="adminPanel">
@@ -347,16 +347,16 @@
                 </svg>
                 ADMIN CONTROL
             </div>
-            <button class="admin-close-btn" onclick="toggleAdmin()" aria-label="Close panel">
+            <button class="admin-close-btn" aria-label="Close panel">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 5L5 15M5 5l10 10"/></svg>
             </button>
         </div>
 
         <nav class="admin-nav">
-            <button class="a-tab active" data-tab="score"  onclick="switchTab('score')">SCORE</button>
-            <button class="a-tab" data-tab="events" onclick="switchTab('events')">EVENTS</button>
-            <button class="a-tab" data-tab="stats"  onclick="switchTab('stats')">STATS</button>
-            <button class="a-tab" data-tab="teams"  onclick="switchTab('teams')">TEAMS</button>
+            <button class="a-tab active" data-tab="score">SCORE</button>
+            <button class="a-tab" data-tab="events">EVENTS</button>
+            <button class="a-tab" data-tab="stats">STATS</button>
+            <button class="a-tab" data-tab="teams">TEAMS</button>
         </nav>
 
         <!-- Tab: Score -->
@@ -364,26 +364,26 @@
             <div class="a-group">
                 <div class="a-label">HOME TEAM SCORE</div>
                 <div class="score-ctrl">
-                    <button class="sc-btn" onclick="adjustScore('home',-1)">−</button>
+                    <button class="sc-btn">−</button>
                     <div class="sc-val" id="adminHomeScore">0</div>
-                    <button class="sc-btn" onclick="adjustScore('home',1)">+</button>
+                    <button class="sc-btn">+</button>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">AWAY TEAM SCORE</div>
                 <div class="score-ctrl">
-                    <button class="sc-btn" onclick="adjustScore('away',-1)">−</button>
+                    <button class="sc-btn">−</button>
                     <div class="sc-val" id="adminAwayScore">0</div>
-                    <button class="sc-btn" onclick="adjustScore('away',1)">+</button>
+                    <button class="sc-btn">+</button>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">MATCH STATUS</div>
                 <div class="a-btn-row">
-                    <button class="a-status-btn" onclick="setStatus('PRE')">PRE-MATCH</button>
-                    <button class="a-status-btn a-status-btn--live" onclick="setStatus('LIVE')">▶ LIVE</button>
-                    <button class="a-status-btn" onclick="setStatus('HT')">HALF TIME</button>
-                    <button class="a-status-btn" onclick="setStatus('FT')">FULL TIME</button>
+                    <button class="a-status-btn">PRE-MATCH</button>
+                    <button class="a-status-btn a-status-btn--live">▶ LIVE</button>
+                    <button class="a-status-btn">HALF TIME</button>
+                    <button class="a-status-btn">FULL TIME</button>
                 </div>
             </div>
         </div>
@@ -401,22 +401,22 @@
             <div class="a-group">
                 <div class="a-label">TEAM</div>
                 <div class="a-toggle-row">
-                    <button class="a-toggle-btn active" id="evtTeamHome" onclick="selectEvtTeam('home')">🏠 HOME</button>
-                    <button class="a-toggle-btn" id="evtTeamAway" onclick="selectEvtTeam('away')">✈ AWAY</button>
+                    <button class="a-toggle-btn active" id="evtTeamHome">🏠 HOME</button>
+                    <button class="a-toggle-btn" id="evtTeamAway">✈ AWAY</button>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">EVENT TYPE</div>
                 <div class="evt-type-grid">
-                    <button class="evt-type-btn selected" data-type="goal"    onclick="selectEvtType('goal')"><span>⚽</span>GOAL</button>
-                    <button class="evt-type-btn" data-type="yellow"  onclick="selectEvtType('yellow')"><span>🟨</span>YELLOW</button>
-                    <button class="evt-type-btn" data-type="red"     onclick="selectEvtType('red')"><span>🟥</span>RED</button>
-                    <button class="evt-type-btn" data-type="sub"     onclick="selectEvtType('sub')"><span>🔄</span>SUB</button>
-                    <button class="evt-type-btn" data-type="foul"    onclick="selectEvtType('foul')"><span>👟</span>FOUL</button>
-                    <button class="evt-type-btn" data-type="offside" onclick="selectEvtType('offside')"><span>🚩</span>OFFSIDE</button>
+                    <button class="evt-type-btn selected" data-type="goal"><span>⚽</span>GOAL</button>
+                    <button class="evt-type-btn" data-type="yellow"><span>🟨</span>YELLOW</button>
+                    <button class="evt-type-btn" data-type="red"><span>🟥</span>RED</button>
+                    <button class="evt-type-btn" data-type="sub"><span>🔄</span>SUB</button>
+                    <button class="evt-type-btn" data-type="foul"><span>👟</span>FOUL</button>
+                    <button class="evt-type-btn" data-type="offside"><span>🚩</span>OFFSIDE</button>
                 </div>
             </div>
-            <button class="a-action-btn" onclick="addEvent()">
+            <button class="a-action-btn">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 5v10M5 10h10"/></svg>
                 ADD EVENT
             </button>
@@ -427,44 +427,43 @@
             <div class="a-group">
                 <div class="a-label">POSSESSION (HOME %)</div>
                 <div class="a-slider-row">
-                    <input type="range" class="a-slider" id="possSlider" min="0" max="100" value="50"
-                           oninput="updateStat('possession',this.value)">
+                    <input type="range" class="a-slider" id="possSlider" min="0" max="100" value="50">
                     <span class="a-slider-val" id="possVal">50%</span>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">SHOTS ON TARGET</div>
                 <div class="a-dual">
-                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeShotsI" value="0" type="number" min="0" oninput="updateStat('shotsHome',this.value)"></label>
-                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayShotsI" value="0" type="number" min="0" oninput="updateStat('shotsAway',this.value)"></label>
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeShotsI" value="0" type="number" min="0"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayShotsI" value="0" type="number" min="0"></label>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">FOULS</div>
                 <div class="a-dual">
-                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeFoulsI" value="0" type="number" min="0" oninput="updateStat('foulsHome',this.value)"></label>
-                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayFoulsI" value="0" type="number" min="0" oninput="updateStat('foulsAway',this.value)"></label>
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeFoulsI" value="0" type="number" min="0"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayFoulsI" value="0" type="number" min="0"></label>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">CORNERS</div>
                 <div class="a-dual">
-                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeCornersI" value="0" type="number" min="0" oninput="updateStat('cornersHome',this.value)"></label>
-                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayCornersI" value="0" type="number" min="0" oninput="updateStat('cornersAway',this.value)"></label>
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeCornersI" value="0" type="number" min="0"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayCornersI" value="0" type="number" min="0"></label>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">PASS ACCURACY (%)</div>
                 <div class="a-dual">
-                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homePassI" value="78" type="number" min="0" max="100" oninput="updateStat('passHome',this.value)"></label>
-                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayPassI"  value="74" type="number" min="0" max="100" oninput="updateStat('passAway',this.value)"></label>
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homePassI" value="78" type="number" min="0" max="100"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayPassI"  value="74" type="number" min="0" max="100"></label>
                 </div>
             </div>
             <div class="a-group">
                 <div class="a-label">SHOTS OFF TARGET</div>
                 <div class="a-dual">
-                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeShotsOffI" value="0" type="number" min="0" oninput="updateStat('shotsOffHome',this.value)"></label>
-                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayShotsOffI" value="0" type="number" min="0" oninput="updateStat('shotsOffAway',this.value)"></label>
+                    <label class="a-dual-field"><span>HOME</span><input class="a-input a-input--sm" id="homeShotsOffI" value="0" type="number" min="0"></label>
+                    <label class="a-dual-field"><span>AWAY</span><input class="a-input a-input--sm" id="awayShotsOffI" value="0" type="number" min="0"></label>
                 </div>
             </div>
         </div>
@@ -483,11 +482,11 @@
                 <div class="a-label">VENUE / STADIUM</div>
                 <input class="a-input" id="venueI" value="Brotherhood Stadium" type="text">
             </div>
-            <button class="a-action-btn" onclick="updateTeams()">
+            <button class="a-action-btn">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
                 APPLY CHANGES
             </button>
-            <button class="a-action-btn a-action-btn--danger" onclick="resetAll()" style="margin-top:8px">
+            <button class="a-action-btn a-action-btn--danger" style="margin-top:8px">
                 <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clip-rule="evenodd"/></svg>
                 RESET ALL DATA
             </button>
@@ -495,7 +494,7 @@
     </aside>
 
     <!-- Admin Toggle FAB -->
-    <button class="admin-fab" id="adminFab" onclick="toggleAdmin()" aria-label="Open admin panel">
+    <button class="admin-fab" id="adminFab" aria-label="Open admin panel">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -519,11 +518,11 @@
     </div>
 
     <!-- ==================== LINEUP MODAL ==================== -->
-    <div class="modal-overlay" id="lineupModal" onclick="handleModalClick(event)">
+    <div class="modal-overlay" id="lineupModal">
         <div class="modal-box">
             <div class="modal-top">
                 <h3 class="modal-title">MATCH LINEUPS</h3>
-                <button class="modal-x" onclick="closeLineupModal()">
+                <button class="modal-x">
                     <svg viewBox="0 0 20 20" fill="currentColor"><path d="M15 5L5 15M5 5l10 10" stroke="currentColor" stroke-width="2"/></svg>
                 </button>
             </div>
@@ -546,7 +545,7 @@
 
     <!-- Screen Flash -->
     <div class="screen-flash" id="screenFlash"></div>
-
+    
     <script type="module" src="script.js"></script>
 </body>
 </html>
