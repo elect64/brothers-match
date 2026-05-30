@@ -356,7 +356,9 @@ a { text-decoration: none; }
   transition: transform .5s var(--ease-spring);
 }
 .crest:hover { transform: scale(1.1) rotate(3deg); }
-.crest svg { width:100%; height:100%; }
+.crest svg,
+.crest img { width:100%; height:100%; }
+.crest img { object-fit: contain; }
 
 .crest-ring {
   position:absolute; inset:-3px; border-radius:50%;
@@ -1253,4 +1255,456 @@ a { text-decoration: none; }
   .timer-big    { font-size:44px; }
   .notif-container { left:10px; right:10px; max-width:none; }
   .admin-fab    { bottom:18px; right:18px; }
+}
+
+/* ================================================================
+   ADMIN PASSWORD LOCK
+   ================================================================ */
+
+.admin-lock-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;                           /* Above everything except admin panel */
+  background: rgba(3, 8, 16, 0.92);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s var(--ease-out);
+}
+
+.admin-lock-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.admin-lock-box {
+  width: 90%;
+  max-width: 380px;
+  background: linear-gradient(180deg, rgba(6, 13, 28, 0.98), rgba(3, 8, 16, 0.98));
+  border: 1px solid rgba(26, 123, 255, 0.2);
+  border-radius: 24px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.4s var(--ease-spring);
+}
+
+.admin-lock-overlay.active .admin-lock-box {
+  transform: scale(1) translateY(0);
+}
+
+.admin-lock-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 0 20px rgba(26, 123, 255, 0.4));
+}
+
+.admin-lock-title {
+  font-family: var(--f-display);
+  font-size: 28px;
+  letter-spacing: 6px;
+  color: var(--c-white);
+  margin-bottom: 8px;
+}
+
+.admin-lock-sub {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--c-white-30);
+  margin-bottom: 28px;
+}
+
+.admin-lock-input-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-lock-input {
+  flex: 1;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(26, 123, 255, 0.25);
+  border-radius: 12px;
+  color: var(--c-white);
+  font-family: var(--f-mono);
+  font-size: 14px;
+  letter-spacing: 2px;
+  outline: none;
+  transition: all 0.25s var(--ease-out);
+}
+
+.admin-lock-input::placeholder {
+  color: var(--c-white-20);
+  letter-spacing: 1px;
+}
+
+.admin-lock-input:focus {
+  border-color: var(--c-blue);
+  box-shadow: 0 0 0 3px rgba(26, 123, 255, 0.15), 0 0 20px rgba(26, 123, 255, 0.2);
+}
+
+.admin-lock-submit {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(26, 123, 255, 0.35);
+  background: linear-gradient(135deg, var(--c-blue), #0052cc);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s var(--ease-out);
+  flex-shrink: 0;
+}
+
+.admin-lock-submit:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(26, 123, 255, 0.5);
+}
+
+.admin-lock-submit svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-lock-error {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--c-red);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: all 0.3s var(--ease-out);
+  height: 0;
+  overflow: hidden;
+}
+
+.admin-lock-error.show {
+  opacity: 1;
+  transform: translateY(0);
+  height: auto;
+  margin-bottom: 12px;
+}
+
+/* Shake animation for wrong password */
+@keyframes lockShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-12px); }
+  40% { transform: translateX(12px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(8px); }
+}
+
+.admin-lock-box.shake {
+  animation: lockShake 0.5s var(--ease-out);
+}
+
+.admin-lock-hint {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--c-white-20);
+  margin-top: 8px;
+}
+
+.admin-lock-hint span {
+  color: var(--c-blue-dim);
+  font-weight: 600;
+}
+
+/* Hide admin panel until unlocked */
+.admin-panel {
+  /* existing styles stay the same */
+}
+
+/* Hide admin FAB on small screens if needed */
+@media (max-width: 480px) {
+  .admin-lock-box {
+    padding: 32px 24px;
+  }
+  .admin-lock-title {
+    font-size: 22px;
+    letter-spacing: 4px;
+  }
+}
+/* ================================================================
+   KICKOFF COUNTDOWN
+   ================================================================ */
+
+.countdown-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: fadeUp 0.8s var(--ease-out) both;
+}
+
+.countdown-label {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--c-cyan);
+  text-transform: uppercase;
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+.countdown-grid {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.countdown-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 64px;
+}
+
+.countdown-num {
+  font-family: var(--f-display);
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 1;
+  color: var(--c-white);
+  text-shadow: 0 0 30px rgba(26, 123, 255, 0.3);
+  min-width: 56px;
+  text-align: center;
+}
+
+.countdown-sep {
+  font-family: var(--f-display);
+  font-size: clamp(28px, 4vw, 42px);
+  color: var(--c-white-20);
+  line-height: 1;
+  margin-top: -8px;
+}
+
+.countdown-unit {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--c-white-30);
+  text-transform: uppercase;
+}
+
+.countdown-live-soon {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--c-green);
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+/* When countdown is very low (under 60 seconds) */
+/* ================================================================
+   KICKOFF COUNTDOWN
+   ================================================================ */
+
+.countdown-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  animation: fadeUp 0.8s var(--ease-out) both;
+}
+
+.countdown-label {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 5px;
+  color: var(--c-cyan);
+  text-transform: uppercase;
+}
+
+.countdown-grid {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.countdown-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 64px;
+}
+
+.countdown-num {
+  font-family: var(--f-display);
+  font-size: clamp(36px, 6vw, 56px);
+  line-height: 1;
+  color: var(--c-white);
+  text-shadow: 0 0 30px rgba(26, 123, 255, 0.3);
+  min-width: 56px;
+  text-align: center;
+}
+
+.countdown-sep {
+  font-family: var(--f-display);
+  font-size: clamp(28px, 4vw, 42px);
+  color: var(--c-white-20);
+  line-height: 1;
+  margin-top: -8px;
+}
+
+.countdown-unit {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--c-white-30);
+  text-transform: uppercase;
+}
+
+.countdown-live-soon {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--c-green);
+  animation: pulseDot 1.5s ease-in-out infinite;
+}
+
+/* ================================================================
+   COUNTDOWN URGENT STATE (Only under 60 seconds)
+   ================================================================ */
+
+.countdown-wrap.countdown-urgent .countdown-num {
+  color: var(--c-cyan) !important;
+  text-shadow: 0 0 40px rgba(0, 229, 255, 0.6) !important;
+  animation: countdownPulse 1s ease-in-out infinite;
+}
+
+@keyframes countdownPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* ================================================================
+   KICKOFF PASSED STATE
+   ================================================================ */
+
+.countdown-passed {
+  font-family: var(--f-heading);
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: var(--c-yellow);
+}
+
+@keyframes countdownPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Kickoff passed message */
+.countdown-passed {
+  font-family: var(--f-heading);
+  font-size: 18px;
+  letter-spacing: 3px;
+  color: var(--c-yellow);
+}
+/* ================================================================
+   VIEWER TIMER (No Controls)
+   ================================================================ */
+
+.timer-card--viewer {
+  justify-content: center;
+  text-align: center;
+  padding: 32px;
+}
+
+.viewer-timer-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--c-white-30);
+}
+
+.viewer-timer-hint .live-dot {
+  width: 6px;
+  height: 6px;
+}
+
+/* ================================================================
+   ADMIN TIMER CONTROLS (Inside Admin Panel)
+   ================================================================ */
+
+.a-group--timer {
+  background: rgba(26, 123, 255, 0.04);
+  border: 1px solid rgba(26, 123, 255, 0.15);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.admin-timer-display {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-timer-val {
+  font-family: var(--f-display);
+  font-size: 28px;
+  letter-spacing: 2px;
+  color: var(--c-cyan);
+  text-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+}
+
+.admin-timer-period {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--c-white-30);
+  text-transform: uppercase;
+}
+
+.timer-btns--admin {
+  margin-bottom: 12px;
+}
+
+.timer-btns--admin .t-btn {
+  padding: 8px 16px;
+  font-size: 10px;
+}
+
+.timer-btns--admin .t-btn svg {
+  width: 12px;
+  height: 12px;
+}
+
+.status-pill-row--admin {
+  justify-content: center;
+}
+
+.status-pill-row--admin .sp-btn {
+  padding: 6px 12px;
+  font-size: 9px;
+}
+
+/* ================================================================
+   RESPONSIVE: Viewer Timer
+   ================================================================ */
+
+@media (max-width: 800px) {
+  .timer-card--viewer {
+    padding: 24px 20px;
+  }
 }
